@@ -38,10 +38,3 @@ variable "disable_microsegmentation" {
   default     = false
   description = "Disable microsegmentation between subnets? Should only be used if necessary. Defaults to false."
 }
-
-# TODO - consider enabling to true if bumping major version. Adding and removing rules is a hassle with count
-variable "use_for_each" {
-  type        = bool
-  default     = false
-  description = "Use for_each instead of count. Defaults to false."
-}
