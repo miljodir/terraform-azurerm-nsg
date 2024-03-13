@@ -51,31 +51,9 @@ resource "azurerm_network_security_group" "nsg" {
 #  Detailed security rules  #
 #############################
 
-resource "azurerm_network_security_rule" "custom_rules" {
-  count = var.use_for_each ? 0 : length(var.custom_rules)
-
-  name                                       = lookup(var.custom_rules[count.index], "name", "default_rule_name")
-  priority                                   = lookup(var.custom_rules[count.index], "priority")
-  direction                                  = lookup(var.custom_rules[count.index], "direction", "Any")
-  access                                     = lookup(var.custom_rules[count.index], "access", "Deny")
-  protocol                                   = lookup(var.custom_rules[count.index], "protocol", "*")
-  source_port_range                          = lookup(var.custom_rules[count.index], "source_port_range", "*") == "*" ? "*" : null
-  source_port_ranges                         = lookup(var.custom_rules[count.index], "source_port_range", "*") == "*" ? null : split(",", var.custom_rules[count.index].source_port_range)
-  destination_port_range                     = lookup(var.custom_rules[count.index], "destination_port_range", null)
-  destination_port_ranges                    = lookup(var.custom_rules[count.index], "destination_port_ranges", null)
-  source_address_prefix                      = lookup(var.custom_rules[count.index], "source_address_prefix", null)
-  source_address_prefixes                    = lookup(var.custom_rules[count.index], "source_address_prefixes", null)
-  destination_address_prefix                 = lookup(var.custom_rules[count.index], "destination_application_security_group_ids", null) == null && lookup(var.custom_rules[count.index], "destination_address_prefixes", null) == null ? lookup(var.custom_rules[count.index], "destination_address_prefix", "*") : null
-  destination_address_prefixes               = lookup(var.custom_rules[count.index], "destination_application_security_group_ids", null) == null ? lookup(var.custom_rules[count.index], "destination_address_prefixes", null) : null
-  description                                = lookup(var.custom_rules[count.index], "description", "Security rule for ${lookup(var.custom_rules[count.index], "name", "default_rule_name")}")
-  resource_group_name                        = var.resource_group_name
-  network_security_group_name                = azurerm_network_security_group.nsg.name
-  source_application_security_group_ids      = lookup(var.custom_rules[count.index], "source_application_security_group_ids", null)
-  destination_application_security_group_ids = lookup(var.custom_rules[count.index], "destination_application_security_group_ids", null)
-}
 
 resource "azurerm_network_security_rule" "custom_rules_for" {
-  for_each = { for value in var.custom_rules : value.name => value if var.use_for_each }
+  for_each = { for value in var.custom_rules : value.name => value }
 
   access                                     = lookup(each.value, "access", "Allow")
   direction                                  = lookup(each.value, "direction", "Inbound")
