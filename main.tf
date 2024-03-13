@@ -83,7 +83,7 @@ resource "azurerm_network_security_rule" "custom_rules_for" {
 }
 
 resource "azurerm_network_security_rule" "default_rules_for" {
-  for_each = { for value in local.default_rules : value.name => value }
+  for_each = { for value in local.default_rules : value.name => value if var.disable_microsegmentation == false }
 
   access                                     = lookup(each.value, "access", "Deny")
   direction                                  = lookup(each.value, "direction", "Any")
