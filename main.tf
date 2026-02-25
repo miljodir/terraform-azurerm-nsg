@@ -63,12 +63,12 @@ resource "azurerm_network_security_rule" "custom_rules_for" {
   protocol                                   = lookup(each.value, "protocol", "*")
   resource_group_name                        = var.resource_group_name
   description                                = lookup(each.value, "description", "Security rule for ${lookup(each.value, "name", "default_rule_name")}")
-  destination_address_prefix                 = lookup(each.value, "destination_application_security_group_ids", null) == null && lookup(each.value, "destination_address_prefixes", null) == null ? lookup(each.value, "destination_address_prefix", "*") : null
+  destination_address_prefix                 = lookup(each.value, "destination_application_security_group_ids", null) == null && lookup(each.value, "destination_address_prefixes", null) == null ? (lookup(var.subnets, try(each.value.destination_address_prefix, ""), null) != null ? lookup(var.subnets, try(each.value.destination_address_prefix, "")) : try(each.value.destination_address_prefix, "*")) : null
   destination_address_prefixes               = lookup(each.value, "destination_application_security_group_ids", null) == null ? lookup(each.value, "destination_address_prefixes", null) : null
   destination_application_security_group_ids = lookup(each.value, "destination_application_security_group_ids", null)
   destination_port_range                     = lookup(each.value, "destination_port_range", null)
   destination_port_ranges                    = lookup(each.value, "destination_port_ranges", null)
-  source_address_prefix                      = lookup(each.value, "source_application_security_group_ids", null) == null && lookup(each.value, "source_address_prefixes", null) == null ? lookup(each.value, "source_address_prefix", "*") : null
+  source_address_prefix                      = lookup(each.value, "source_application_security_group_ids", null) == null && lookup(each.value, "source_address_prefixes", null) == null ? (lookup(var.subnets, try(each.value.source_address_prefix, ""), null) != null ? lookup(var.subnets, try(each.value.source_address_prefix, "")) : try(each.value.source_address_prefix, "*")) : null
   source_address_prefixes                    = lookup(each.value, "source_application_security_group_ids", null) == null ? lookup(each.value, "source_address_prefixes", null) : null
   source_application_security_group_ids      = lookup(each.value, "source_application_security_group_ids", null)
   source_port_range                          = lookup(each.value, "source_port_range", "*") == "*" ? "*" : null
