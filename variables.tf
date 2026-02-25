@@ -38,3 +38,9 @@ variable "disable_microsegmentation" {
   default     = false
   description = "Disable microsegmentation between subnets? Should only be used if necessary. Defaults to false."
 }
+
+variable "subnets" {
+  description = "A map of subnet names to CIDR ranges in the virtual network, for use in NSG rules"
+  type        = map(string)
+  default     = {}
+}
