@@ -68,7 +68,7 @@ resource "azurerm_network_security_rule" "custom_rules_for" {
   destination_application_security_group_ids = lookup(each.value, "destination_application_security_group_ids", null)
   destination_port_range                     = lookup(each.value, "destination_port_range", null)
   destination_port_ranges                    = lookup(each.value, "destination_port_ranges", null)
-  source_address_prefix                      = lookup(each.value, "source_application_security_group_ids", null) == null && lookup(each.value, "source_address_prefixes", null) == null ? lookup(each.value, "source_address_prefix", "*") : null
+  source_address_prefix                      = lookup(each.value, "source_application_security_group_ids", null) == null && lookup(each.value, "source_address_prefixes", null) == null ? (lookup(var.subnets, lookup(each.value, "source_address_prefix", null), null) != null ? lookup(var.subnets, lookup(each.value, "source_address_prefix")) : lookup(each.value, "source_address_prefix", "*")) : null
   source_address_prefixes                    = lookup(each.value, "source_application_security_group_ids", null) == null ? lookup(each.value, "source_address_prefixes", null) : null
   source_application_security_group_ids      = lookup(each.value, "source_application_security_group_ids", null)
   source_port_range                          = lookup(each.value, "source_port_range", "*") == "*" ? "*" : null
