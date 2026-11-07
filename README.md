@@ -86,6 +86,14 @@ module "application_gateway_nsg" {
 
 Listener and backend application rules must be supplied separately. Network-isolated private gateways do not need the GatewayManager custom rule.
 
+## Custom source ports
+
+Custom rules default `source_port_range` to `"*"` when omitted or explicitly
+`null`. An explicit `"*"` has the same behavior. Non-wildcard values use
+`source_port_ranges`: a single port such as `"1000"` becomes one entry, and
+comma-separated ports or ranges such as `"1000, 2000-2100"` are split and
+trimmed. Destination ports must still be specified independently.
+
 ## Tests
 
 GitHub Actions runs `terraform fmt -check -recursive -diff`, `terraform init -backend=false -input=false`, `terraform validate`, and `terraform test`. Tests use a mocked AzureRM provider, require Terraform 1.7 or newer, and cover omitted/null/true/false probe inputs, lowercase prefix cases, retained rule scopes and priorities, and microsegmentation gating without Azure credentials or deployments.

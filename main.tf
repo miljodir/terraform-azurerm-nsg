@@ -1,6 +1,12 @@
 locals {
   allow_azure_load_balancer_inbound = var.allow_azure_load_balancer_inbound != null ? var.allow_azure_load_balancer_inbound : startswith(var.security_group_name, "p")
 
+  custom_rules = {
+    for rule in var.custom_rules : rule.name => merge(rule, {
+      source_port_range = lookup(rule, "source_port_range", null) == null ? "*" : rule.source_port_range
+    })
+  }
+
   default_rules = concat(
     local.allow_azure_load_balancer_inbound ? [
       {
@@ -46,7 +52,7 @@ resource "azurerm_network_security_group" "nsg" {
 
 
 resource "azurerm_network_security_rule" "custom_rules_for" {
-  for_each = { for value in var.custom_rules : value.name => value }
+  for_each = local.custom_rules
 
   access                                     = lookup(each.value, "access", "Allow")
   direction                                  = lookup(each.value, "direction", "Inbound")
@@ -64,8 +70,8 @@ resource "azurerm_network_security_rule" "custom_rules_for" {
   source_address_prefix                      = lookup(each.value, "source_application_security_group_ids", null) == null && lookup(each.value, "source_address_prefixes", null) == null ? (lookup(var.subnets, try(each.value.source_address_prefix, ""), null) != null ? lookup(var.subnets, try(each.value.source_address_prefix, "")) : try(each.value.source_address_prefix, "*")) : null
   source_address_prefixes                    = lookup(each.value, "source_application_security_group_ids", null) == null ? lookup(each.value, "source_address_prefixes", null) : null
   source_application_security_group_ids      = lookup(each.value, "source_application_security_group_ids", null)
-  source_port_range                          = lookup(each.value, "source_port_range", "*") == "*" ? "*" : null
-  source_port_ranges                         = lookup(each.value, "source_port_range", "*") == "*" ? null : [for r in split(",", each.value.source_port_range) : trimspace(r)]
+  source_port_range                          = each.value.source_port_range == "*" ? "*" : null
+  source_port_ranges                         = each.value.source_port_range == "*" ? null : [for r in split(",", each.value.source_port_range) : trimspace(r)]
 
   lifecycle {
     precondition {

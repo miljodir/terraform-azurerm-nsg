@@ -46,6 +46,11 @@ These are unit-style tests: they verify how the module turns inputs into
 resource configuration. They do not prove that Azure accepts the configuration;
 that still happens when a consuming workload runs `terraform plan`/`apply`.
 
+`tests/source_ports.tftest.hcl` checks omitted and explicitly null custom source
+ports, explicit wildcards, single ports, and comma-separated ports and ranges.
+It asserts both singular and plural resource attributes, including retained
+wildcard behavior for the generated default rules.
+
 ## Writing a test
 
 ```hcl
