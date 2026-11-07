@@ -107,7 +107,7 @@ run "microsegmentation_disabled_with_gateway" {
   command = plan
 
   variables {
-    disable_microsegmentation                       = true
+    disable_microsegmentation                        = true
     allow_application_gateway_infrastructure_inbound = true
   }
 
@@ -121,7 +121,7 @@ run "microsegmentation_disabled_with_load_balancer" {
   command = plan
 
   variables {
-    disable_microsegmentation        = true
+    disable_microsegmentation         = true
     allow_azure_load_balancer_inbound = true
   }
 
@@ -135,7 +135,7 @@ run "microsegmentation_disabled_with_both" {
   command = plan
 
   variables {
-    disable_microsegmentation                       = true
+    disable_microsegmentation                        = true
     allow_application_gateway_infrastructure_inbound = true
     allow_azure_load_balancer_inbound                = true
   }

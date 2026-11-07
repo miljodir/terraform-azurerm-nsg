@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "**.tf"
-      - "tests/**"
+      - "**.tftest.hcl"
       - ".github/workflows/test.yaml"
 
 permissions:
