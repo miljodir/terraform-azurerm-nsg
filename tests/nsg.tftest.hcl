@@ -19,12 +19,8 @@ run "defaults_create_nsg_with_default_rules" {
   }
 
   assert {
-    condition = toset(keys(azurerm_network_security_rule.default_rules_for)) == toset([
-      "AllowApplicationGatewayInfrastructureInbound",
-      "AllowAzureLoadbalancerInbound",
-      "DenyAllInbound",
-    ])
-    error_message = "All three default rules should be created when microsegmentation is enabled."
+    condition     = toset(keys(azurerm_network_security_rule.default_rules_for)) == toset(["DenyAllInbound"])
+    error_message = "A non-production name should create only the deny-all default rule."
   }
 
   assert {
@@ -47,12 +43,97 @@ run "disable_microsegmentation_removes_default_rules" {
   command = plan
 
   variables {
-    disable_microsegmentation = true
+    disable_microsegmentation         = true
+    allow_azure_load_balancer_inbound = true
   }
 
   assert {
     condition     = length(azurerm_network_security_rule.default_rules_for) == 0
     error_message = "Default rules must not be created when microsegmentation is disabled."
+  }
+}
+
+run "production_name_defaults_to_probe_allow" {
+  command = plan
+
+  variables {
+    security_group_name               = "p-nsg-test"
+    allow_azure_load_balancer_inbound = null
+  }
+
+  assert {
+    condition = toset(keys(azurerm_network_security_rule.default_rules_for)) == toset([
+      "AllowAzureLoadbalancerInbound",
+      "DenyAllInbound",
+    ])
+    error_message = "A lowercase p prefix with a null override should allow load-balancer probes."
+  }
+
+  assert {
+    condition = (
+      azurerm_network_security_rule.default_rules_for["AllowAzureLoadbalancerInbound"].priority == 4095 &&
+      azurerm_network_security_rule.default_rules_for["AllowAzureLoadbalancerInbound"].access == "Allow" &&
+      azurerm_network_security_rule.default_rules_for["AllowAzureLoadbalancerInbound"].source_address_prefix == "AzureLoadbalancer" &&
+      azurerm_network_security_rule.default_rules_for["AllowAzureLoadbalancerInbound"].destination_address_prefix == "VirtualNetwork"
+    )
+    error_message = "The load-balancer probe rule should retain its scope and priority."
+  }
+}
+
+run "explicit_false_overrides_production_name" {
+  command = plan
+
+  variables {
+    security_group_name               = "p-nsg-test"
+    allow_azure_load_balancer_inbound = false
+  }
+
+  assert {
+    condition     = toset(keys(azurerm_network_security_rule.default_rules_for)) == toset(["DenyAllInbound"])
+    error_message = "An explicit false override should disable probes for a production-style name."
+  }
+}
+
+run "explicit_true_overrides_nonproduction_name" {
+  command = plan
+
+  variables {
+    security_group_name               = "dev-nsg-test"
+    allow_azure_load_balancer_inbound = true
+  }
+
+  assert {
+    condition = toset(keys(azurerm_network_security_rule.default_rules_for)) == toset([
+      "AllowAzureLoadbalancerInbound",
+      "DenyAllInbound",
+    ])
+    error_message = "An explicit true override should enable probes for a non-production name."
+  }
+}
+
+run "uppercase_prefix_does_not_enable_probes" {
+  command = plan
+
+  variables {
+    security_group_name = "Prod-nsg-test"
+  }
+
+  assert {
+    condition     = toset(keys(azurerm_network_security_rule.default_rules_for)) == toset(["DenyAllInbound"])
+    error_message = "The production-name prefix check should be case-sensitive."
+  }
+}
+
+run "embedded_prefix_does_not_enable_probes" {
+  command = plan
+
+  variables {
+    security_group_name = "nsg-prod-test"
+  }
+
+  assert {
+    condition     = toset(keys(azurerm_network_security_rule.default_rules_for)) == toset(["DenyAllInbound"])
+    error_message = "Only a leading lowercase p should enable the default probe rule."
   }
 }
 
