@@ -92,7 +92,8 @@ Custom rules default `source_port_range` to `"*"` when omitted or explicitly
 `null`. An explicit `"*"` has the same behavior. Non-wildcard values use
 `source_port_ranges`: a single port such as `"1000"` becomes one entry, and
 comma-separated ports or ranges such as `"1000, 2000-2100"` are split and
-trimmed. Destination ports must still be specified independently.
+trimmed. Empty strings are not treated as missing and are not replaced with a
+wildcard. Destination ports must still be specified independently.
 
 ## Tests
 

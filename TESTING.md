@@ -47,7 +47,9 @@ resource configuration. They do not prove that Azure accepts the configuration;
 that still happens when a consuming workload runs `terraform plan`/`apply`.
 
 `tests/source_ports.tftest.hcl` checks omitted and explicitly null custom source
-ports, explicit wildcards, single ports, and comma-separated ports and ranges.
+ports, explicit wildcards, single ports, empty strings, and comma-separated
+ports and ranges. Empty strings retain existing parsing rather than defaulting
+to a wildcard.
 It asserts both singular and plural resource attributes, including retained
 wildcard behavior for the generated default rules.
 

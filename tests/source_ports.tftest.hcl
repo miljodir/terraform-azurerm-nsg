@@ -99,6 +99,27 @@ run "single_source_port_uses_port_ranges" {
   }
 }
 
+run "empty_source_port_is_not_replaced_with_wildcard" {
+  command = plan
+
+  variables {
+    custom_rules = [{
+      name                   = "EmptySourcePort"
+      priority               = 200
+      source_port_range      = ""
+      destination_port_range = "443"
+    }]
+  }
+
+  assert {
+    condition = (
+      azurerm_network_security_rule.custom_rules_for["EmptySourcePort"].source_port_range == null &&
+      toset(azurerm_network_security_rule.custom_rules_for["EmptySourcePort"].source_port_ranges) == toset([""])
+    )
+    error_message = "An empty source-port string must retain existing parsing, not broaden to '*'."
+  }
+}
+
 run "comma_separated_source_ports_are_split_and_trimmed" {
   command = plan
 
