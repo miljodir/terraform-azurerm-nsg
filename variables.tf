@@ -39,6 +39,18 @@ variable "disable_microsegmentation" {
   description = "Disable microsegmentation between subnets? Should only be used if necessary. Defaults to false."
 }
 
+variable "allow_application_gateway_infrastructure_inbound" {
+  description = "Allow GatewayManager on ports 65200-65535 and AzureLoadBalancer probes for subnets hosting Application Gateway v2. Does not allow client or backend application traffic. Ignored when disable_microsegmentation is true."
+  type        = bool
+  default     = false
+}
+
+variable "allow_azure_load_balancer_inbound" {
+  description = "Allow AzureLoadBalancer health probes for load-balanced workloads. Application Gateway v2 infrastructure opt-in already includes this rule. Ignored when disable_microsegmentation is true."
+  type        = bool
+  default     = false
+}
+
 variable "subnets" {
   description = "A map of subnet names to CIDR ranges in the virtual network, for use in NSG rules"
   type        = map(string)

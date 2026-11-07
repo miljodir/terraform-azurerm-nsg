@@ -1,43 +1,48 @@
 locals {
-  # Add default deny everything rule with high priority
-  default_rules = [
-    {
-      name                       = "AllowApplicationGatewayInfrastructureInbound"
-      description                = "Allows inbound traffic for Azure Application Gateway v2 infrastructure"
-      protocol                   = "*"
-      source_port_range          = "*"
-      destination_port_range     = "65200-65535"
-      source_address_prefix      = "GatewayManager"
-      destination_address_prefix = "*"
-      access                     = "Allow"
-      priority                   = 4050
-      direction                  = "Inbound"
-    },
-    {
-      name                       = "AllowAzureLoadbalancerInbound"
-      description                = "Allows inbound traffic for Azure Load balancer probes"
-      protocol                   = "*"
-      source_port_range          = "*"
-      destination_port_range     = "*"
-      source_address_prefix      = "AzureLoadbalancer"
-      destination_address_prefix = "VirtualNetwork"
-      access                     = "Allow"
-      priority                   = 4095
-      direction                  = "Inbound"
-    },
-    {
-      name                       = "DenyAllInbound"
-      description                = "Denies all inbound traffic not explicitly allowed above"
-      protocol                   = "*"
-      source_port_range          = "*"
-      destination_port_range     = "*"
-      source_address_prefix      = "*"
-      destination_address_prefix = "*"
-      access                     = "Deny"
-      priority                   = 4096
-      direction                  = "Inbound"
-    }
-  ]
+  default_rules = concat(
+    var.allow_application_gateway_infrastructure_inbound ? [
+      {
+        name                       = "AllowApplicationGatewayInfrastructureInbound"
+        description                = "Allows inbound traffic for Azure Application Gateway v2 infrastructure"
+        protocol                   = "*"
+        source_port_range          = "*"
+        destination_port_range     = "65200-65535"
+        source_address_prefix      = "GatewayManager"
+        destination_address_prefix = "*"
+        access                     = "Allow"
+        priority                   = 4050
+        direction                  = "Inbound"
+      }
+    ] : [],
+    var.allow_application_gateway_infrastructure_inbound || var.allow_azure_load_balancer_inbound ? [
+      {
+        name                       = "AllowAzureLoadbalancerInbound"
+        description                = "Allows inbound traffic for Azure Load balancer probes"
+        protocol                   = "*"
+        source_port_range          = "*"
+        destination_port_range     = "*"
+        source_address_prefix      = "AzureLoadbalancer"
+        destination_address_prefix = "VirtualNetwork"
+        access                     = "Allow"
+        priority                   = 4095
+        direction                  = "Inbound"
+      }
+    ] : [],
+    [
+      {
+        name                       = "DenyAllInbound"
+        description                = "Denies all inbound traffic not explicitly allowed above"
+        protocol                   = "*"
+        source_port_range          = "*"
+        destination_port_range     = "*"
+        source_address_prefix      = "*"
+        destination_address_prefix = "*"
+        access                     = "Deny"
+        priority                   = 4096
+        direction                  = "Inbound"
+      }
+    ]
+  )
 }
 
 resource "azurerm_network_security_group" "nsg" {
