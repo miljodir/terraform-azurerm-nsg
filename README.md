@@ -58,6 +58,34 @@ module "workload_nsg" {
 }
 ```
 
+For a standard Application Gateway v2 hosting subnet that requires GatewayManager, supply a custom rule at an allowed custom priority:
+
+```hcl
+module "application_gateway_nsg" {
+  source = "miljodir/nsg/azurerm"
+
+  resource_group_name              = "rg-network"
+  security_group_name              = "dev-application-gateway-nsg"
+  allow_azure_load_balancer_inbound = true
+  custom_rules = [
+    {
+      name                       = "AllowApplicationGatewayInfrastructureInbound"
+      description                = "Application Gateway v2 infrastructure management"
+      priority                   = 4000
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = "65200-65535"
+      source_address_prefix      = "GatewayManager"
+      destination_address_prefix = "*"
+    }
+  ]
+}
+```
+
+Listener and backend application rules must be supplied separately. Network-isolated private gateways do not need the GatewayManager custom rule.
+
 ## Tests
 
 GitHub Actions runs `terraform fmt -check -recursive -diff`, `terraform init -backend=false -input=false`, `terraform validate`, and `terraform test`. Tests use a mocked AzureRM provider, require Terraform 1.7 or newer, and cover omitted/null/true/false probe inputs, lowercase prefix cases, retained rule scopes and priorities, and microsegmentation gating without Azure credentials or deployments.
