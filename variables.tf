@@ -39,6 +39,13 @@ variable "disable_microsegmentation" {
   description = "Disable microsegmentation between subnets? Should only be used if necessary. Defaults to false."
 }
 
+variable "allow_azure_load_balancer_inbound" {
+  description = "Allow AzureLoadBalancer health probes. Null defaults to whether security_group_name starts with lowercase p; explicit true or false overrides the name-based default. Unnecessary if custom rules already permit required probes. Ignored when disable_microsegmentation is true."
+  type        = bool
+  default     = null
+  nullable    = true
+}
+
 variable "subnets" {
   description = "A map of subnet names to CIDR ranges in the virtual network, for use in NSG rules"
   type        = map(string)
