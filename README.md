@@ -52,8 +52,8 @@ Previously, both infrastructure allow rules were created for every NSG with micr
 module "workload_nsg" {
   source = "miljodir/nsg/azurerm"
 
-  resource_group_name              = "rg-network"
-  security_group_name              = "dev-workload-nsg"
+  resource_group_name               = "rg-network"
+  security_group_name               = "dev-workload-nsg"
   allow_azure_load_balancer_inbound = true
 }
 ```
@@ -64,8 +64,8 @@ For a standard Application Gateway v2 hosting subnet that requires GatewayManage
 module "application_gateway_nsg" {
   source = "miljodir/nsg/azurerm"
 
-  resource_group_name              = "rg-network"
-  security_group_name              = "dev-application-gateway-nsg"
+  resource_group_name               = "rg-network"
+  security_group_name               = "dev-application-gateway-nsg"
   allow_azure_load_balancer_inbound = true
   custom_rules = [
     {

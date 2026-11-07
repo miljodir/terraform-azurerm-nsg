@@ -69,7 +69,7 @@ run "production_name_explicit_false" {
   command = plan
 
   variables {
-    security_group_name              = "p-network-nsg"
+    security_group_name               = "p-network-nsg"
     allow_azure_load_balancer_inbound = false
   }
 
@@ -125,7 +125,7 @@ run "microsegmentation_disabled_with_false" {
 
   variables {
     disable_microsegmentation         = true
-    security_group_name              = "p-network-nsg"
+    security_group_name               = "p-network-nsg"
     allow_azure_load_balancer_inbound = false
   }
 
@@ -139,7 +139,7 @@ run "production_name_explicit_null" {
   command = plan
 
   variables {
-    security_group_name              = "p"
+    security_group_name               = "p"
     allow_azure_load_balancer_inbound = null
   }
 
@@ -153,7 +153,7 @@ run "nonproduction_name_explicit_null" {
   command = plan
 
   variables {
-    security_group_name              = "dev-network-nsg"
+    security_group_name               = "dev-network-nsg"
     allow_azure_load_balancer_inbound = null
   }
 
@@ -193,7 +193,7 @@ run "production_name_explicit_true" {
   command = plan
 
   variables {
-    security_group_name              = "p-network-nsg"
+    security_group_name               = "p-network-nsg"
     allow_azure_load_balancer_inbound = true
   }
 
@@ -207,7 +207,7 @@ run "nonproduction_name_explicit_false" {
   command = plan
 
   variables {
-    security_group_name              = "dev-network-nsg"
+    security_group_name               = "dev-network-nsg"
     allow_azure_load_balancer_inbound = false
   }
 
