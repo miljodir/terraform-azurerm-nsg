@@ -19,8 +19,8 @@ With `disable_microsegmentation = false` (the default), `DenyAllInbound` remains
 
 Both infrastructure flags default to `false`:
 
-- `allow_application_gateway_infrastructure_inbound`: enable on the **dedicated subnet hosting Application Gateway v2**, not on backend subnets merely reachable by it. This flag creates **both** infrastructure allow rules, so the load-balancer flag is not also needed.
-- `allow_azure_load_balancer_inbound`: enable on subnets whose workloads need Azure Load Balancer health probes. This flag alone creates only the probe rule; it does not allow load-balanced client traffic.
+- `allow_application_gateway_infrastructure_inbound`: enable on the **dedicated subnet hosting standard Application Gateway v2 without Network Isolation**, not on backend subnets merely reachable by it. This flag creates **both** infrastructure allow rules, so the load-balancer flag is not also needed.
+- `allow_azure_load_balancer_inbound`: enable on subnets whose workloads need Azure Load Balancer health probes, including network-isolated private Application Gateway v2 hosting subnets. This flag alone creates only the probe rule; it does not allow load-balanced client traffic. Existing narrower custom rules may already permit the required probes, in which case this broad exception is unnecessary.
 
 These exceptions are unnecessary on ordinary subnets. Application Gateway client/listener traffic still requires custom rules on its hosting subnet. Backend application traffic and Application Gateway backend probes originate from the gateway subnet, not `GatewayManager` or `AzureLoadBalancer`: use custom rules permitting the gateway subnet CIDR to the required backend application ports. Neither opt-in flag grants that access.
 
@@ -28,11 +28,11 @@ Setting `disable_microsegmentation = true` retains the existing behavior: none o
 
 See Microsoft's [Application Gateway infrastructure requirements](https://learn.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure#network-security-groups) and [Azure Load Balancer health probes](https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-custom-probe-overview).
 
-The Application Gateway infrastructure requirements above apply to standard deployments without Network Isolation. [Private deployments with Network Isolation](https://learn.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure#network-security-group-rules-for-private-deployments) relax these requirements; do not enable infrastructure exceptions unless your deployment needs them.
+The GatewayManager requirement applies to standard deployments without Network Isolation. [Private deployments with Network Isolation](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment#network-security-group-control) still require inbound `AzureLoadBalancer` health probes but do **not** require `GatewayManager`. For these hosting subnets, keep `allow_application_gateway_infrastructure_inbound = false` and set `allow_azure_load_balancer_inbound = true`, unless existing custom rules already permit the required probes.
 
-## Migration (breaking change)
+## Migration (minor release with a compatibility warning)
 
-Previously, both infrastructure allow rules were created for every NSG with microsegmentation enabled. In the next **major release**, upgrading with unchanged inputs removes both allow rules while preserving deny-all inbound. Before upgrading, opt in on Application Gateway v2 hosting subnets and subnets relying on Azure Load Balancer probes to avoid disrupting infrastructure operations or workload health checks. Ordinary backend subnets should keep both flags disabled and use explicit application rules.
+Previously, both infrastructure allow rules were created for every NSG with microsegmentation enabled. This update is classified as a **minor release (1.4.0)** at the user's request, but upgrading with unchanged inputs removes both allow rules while preserving deny-all inbound. **This changes existing behavior and can disrupt infrastructure operations or workload health checks.** Before upgrading, opt in on standard Application Gateway v2 hosting subnets using the Application Gateway flag, and on network-isolated private gateway or other load-balancer probe subnets using only the load-balancer flag. Review existing custom rules first: narrower rules may already permit the required traffic. Ordinary backend subnets should keep both flags disabled and use explicit application rules.
 
 For direct NSG module callers, set the relevant module input. Virtual-network module callers should opt in per subnet using the corresponding inputs exposed by that module.
 
