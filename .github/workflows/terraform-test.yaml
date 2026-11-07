@@ -1,0 +1,22 @@
+name: Module tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: module-tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    uses: miljodir/workflow-templates/.github/workflows/terraform-test.yaml@terraform-test/v0
+    with:
+      engine: both
+      terraform-version: "1.x"
+      opentofu-version: "1.x"
