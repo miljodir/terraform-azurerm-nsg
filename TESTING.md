@@ -6,6 +6,12 @@ Terraform and OpenTofu in GitHub Actions on pull requests and pushes to `main`
 [Terraform and OpenTofu test workflow](https://github.com/miljodir/workflow-templates/blob/main/doc/workflows/terraform-test.md).
 CI uses Terraform `1.x` and the latest stable OpenTofu `1.x` release.
 
+The release caller in `.github/workflows/tag-module.yaml` excludes the exact
+test-file paths from release detection, for both PR previews and merged-PR
+events. Tests are not separate registry modules. When adding another test file,
+add its repository-relative path to `exclude-files`; this does not exclude it
+from the test workflow.
+
 ## What runs in CI
 
 The shared workflow formats the module, initializes without a backend, validates
@@ -45,6 +51,13 @@ root before running tests.
 These are unit-style tests: they verify how the module turns inputs into
 resource configuration. They do not prove that Azure accepts the configuration;
 that still happens when a consuming workload runs `terraform plan`/`apply`.
+
+`tests/source_ports.tftest.hcl` checks omitted and explicitly null custom source
+ports, explicit wildcards, single ports, empty strings, and comma-separated
+ports and ranges. Empty strings retain existing parsing rather than defaulting
+to a wildcard.
+It asserts both singular and plural resource attributes, including retained
+wildcard behavior for the generated default rules.
 
 ## Writing a test
 
