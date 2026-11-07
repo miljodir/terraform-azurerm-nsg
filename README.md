@@ -36,6 +36,8 @@ Previously, both infrastructure allow rules were created for every NSG with micr
 
 For direct NSG module callers, set the relevant module input. Virtual-network module callers should opt in per subnet using the corresponding inputs exposed by that module.
 
+**Existing virtual-network module consumers are also affected without upgrading their virtual-network module.** Released `miljodir/virtual-network/azurerm` versions 1.4.1 and 2.0.1 depend on NSG `~> 1.0`, which permits NSG 1.4.0 on a fresh module installation or upgrade. Those older virtual-network versions do not expose these flags, so they cannot opt in through module inputs. Before allowing dependency resolution to select NSG 1.4.0, move to a virtual-network module version exposing the flags and configure the required exceptions, or confirm its existing custom NSG rules already allow the required traffic. Rule removal does not require a virtual-network module version upgrade.
+
 ```hcl
 module "application_gateway_nsg" {
   source = "miljodir/nsg/azurerm"
