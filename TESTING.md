@@ -4,7 +4,7 @@ This module uses the native Terraform test framework. Its tests run on both
 Terraform and OpenTofu in GitHub Actions on pull requests and pushes to `main`
 (see `.github/workflows/terraform-test.yaml`). The caller uses the shared
 [Terraform and OpenTofu test workflow](https://github.com/miljodir/workflow-templates/blob/main/doc/workflows/terraform-test.md).
-CI uses Terraform `1.x` and OpenTofu `1.13.9`.
+CI uses Terraform `1.x` and the latest stable OpenTofu `1.x` release.
 
 ## What runs in CI
 
@@ -85,8 +85,8 @@ Guidelines:
 
 ## Running locally
 
-Terraform mocked-provider tests require Terraform >= 1.7. This suite is also
-verified with OpenTofu 1.13.9.
+Terraform mocked-provider tests require Terraform >= 1.7. This suite has been
+verified with OpenTofu 1.13.9; CI selects the latest stable `1.x` release.
 
 ```sh
 terraform fmt -check -recursive
