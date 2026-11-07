@@ -1,44 +1,46 @@
 # Testing
 
-This module is tested with the native [`terraform test`](https://developer.hashicorp.com/terraform/language/tests)
-framework. Tests run automatically in GitHub Actions on every pull request to
-`main` (see `.github/workflows/terraform-test.yaml`).
+This module uses the native Terraform test framework. Its tests run on both
+Terraform and OpenTofu in GitHub Actions on pull requests and pushes to `main`
+(see `.github/workflows/terraform-test.yaml`). The caller uses the shared
+[Terraform and OpenTofu test workflow](https://github.com/miljodir/workflow-templates/blob/main/doc/workflows/terraform-test.md).
+CI uses Terraform `1.x` and OpenTofu `1.13.9`.
 
 ## What runs in CI
 
-| Job      | Command                              | Purpose                                         |
-| -------- | ------------------------------------ | ----------------------------------------------- |
-| Format   | `terraform fmt -check -recursive`    | Consistent formatting                           |
-| Validate | `terraform init` + `terraform validate` | Syntax, types and references are valid      |
-| Test     | `terraform test`                     | Module behaviour (defaults, wiring, validation) |
+The shared workflow formats the module, initializes without a backend, validates
+the configuration, and runs its native tests with both engines. It uses
+`contents: read` and requires no secrets or cloud credentials.
 
 ## How the tests work
 
-- Test files live in `tests/` and end in `.tftest.hcl`.
-- Every test file declares `mock_provider` blocks. Mocked providers never call
-  Azure: no credentials are needed and **no real resources are created**.
-  Resource attributes that Azure would compute (for example `id`) get generated
-  fake values.
-- Each `run` block plans (`command = plan`) or "applies" against the mocks
-  (`command = apply`) with a set of input variables, then checks the result with
-  `assert` blocks.
-- Input validation is tested with `expect_failures`, which passes only when the
-  listed variable validation or precondition fails.
+- Test files live in `tests/` and end in `.tftest.hcl`. Terraform and OpenTofu
+  both support this test format.
+- Every test file declares `mock_provider` blocks. Mocked providers do not call
+  Azure, so no credentials are needed and **no real resources are created**.
+  Resource attributes that Azure would compute (for example `id`) get
+  generated fake values.
+- Each `run` block plans (`command = plan`) or applies against the mocks
+  (`command = apply`) with a set of input variables, then checks the result
+  with `assert` blocks.
+- Input validation is tested with `expect_failures`, which passes only when
+  the listed variable validation or precondition fails.
 - Data sources and nested modules that would need real lookups can be replaced
   with `override_data` / `override_module`.
 
-- When tests run, the module is the *root* module. Terraform then rejects
-  outputs that contain sensitive attributes unless they are marked
-  `sensitive = true` (consumers calling the module are not affected). Put
-  test-only override files in `tests/overrides/` named `*_override.tf`, e.g.
+When tests run, the module is the *root* module. Terraform rejects outputs
+that contain sensitive attributes unless they are marked `sensitive = true`
+(consumers calling the module are not affected). If needed, put test-only
+override files in `tests/overrides/` named `*_override.tf`, for example:
 
-  ```hcl
-  output "storage_account" {
-    sensitive = true
-  }
-  ```
+```hcl
+output "storage_account" {
+  sensitive = true
+}
+```
 
-  CI copies them into the module root right before `terraform test`.
+The shared workflow can be configured to copy these overrides into the module
+root before running tests.
 
 These are unit-style tests: they verify how the module turns inputs into
 resource configuration. They do not prove that Azure accepts the configuration;
@@ -83,16 +85,22 @@ Guidelines:
 
 ## Running locally
 
-Requires Terraform >= 1.7.
+Terraform mocked-provider tests require Terraform >= 1.7. This suite is also
+verified with OpenTofu 1.13.9.
 
 ```sh
+terraform fmt -check -recursive
 terraform init -backend=false
-terraform test            # all tests
-terraform test -verbose   # include plan output
-terraform test -filter=tests/defaults.tftest.hcl
+terraform validate
+terraform test
 ```
 
-Remove the copied `*_override.tf` files afterwards (they are git-ignored).
+```sh
+tofu fmt -check -recursive
+tofu init -backend=false
+tofu validate
+tofu test
+```
 
-If the module references internal modules over SSH, you need SSH access to
-GitHub for `terraform init` to download them.
+If you configure test-only output overrides, remove any copied `*_override.tf`
+files afterwards (they are git-ignored).
