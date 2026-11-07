@@ -28,6 +28,8 @@ Setting `disable_microsegmentation = true` retains the existing behavior: none o
 
 See Microsoft's [Application Gateway infrastructure requirements](https://learn.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure#network-security-groups) and [Azure Load Balancer health probes](https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-custom-probe-overview).
 
+The Application Gateway infrastructure requirements above apply to standard deployments without Network Isolation. [Private deployments with Network Isolation](https://learn.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure#network-security-group-rules-for-private-deployments) relax these requirements; do not enable infrastructure exceptions unless your deployment needs them.
+
 ## Migration (breaking change)
 
 Previously, both infrastructure allow rules were created for every NSG with microsegmentation enabled. In the next **major release**, upgrading with unchanged inputs removes both allow rules while preserving deny-all inbound. Before upgrading, opt in on Application Gateway v2 hosting subnets and subnets relying on Azure Load Balancer probes to avoid disrupting infrastructure operations or workload health checks. Ordinary backend subnets should keep both flags disabled and use explicit application rules.
@@ -46,4 +48,4 @@ module "application_gateway_nsg" {
 
 ## Tests
 
-GitHub Actions runs `terraform fmt -check -recursive`, `terraform init -backend=false -input=false`, `terraform validate`, and `terraform test`. The tests use a mocked AzureRM provider, require Terraform 1.7 or newer, and cover all combinations of the infrastructure flags and `disable_microsegmentation` without Azure credentials or deployments.
+GitHub Actions runs `terraform fmt -check -recursive -diff`, `terraform init -backend=false -input=false`, `terraform validate`, and `terraform test`. The tests use a mocked AzureRM provider, require Terraform 1.7 or newer, and cover all combinations of the infrastructure flags and `disable_microsegmentation` without Azure credentials or deployments.
