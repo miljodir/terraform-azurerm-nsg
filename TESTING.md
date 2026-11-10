@@ -12,6 +12,25 @@ events. Tests are not separate registry modules. When adding another test file,
 add its repository-relative path to `exclude-files`; this does not exclude it
 from the test workflow.
 
+## Release workflow events
+
+The release caller uses `pull_request` for previews on opened, synchronized,
+reopened, labeled, and unlabeled PRs targeting `main` with matching `**.tf`
+changes. A merged `closed` event uses the same filters and the shared
+`generate-release-metadata/v1` workflow to dispatch release and wiki updates.
+Unmerged closes skip metadata generation. The `create_release` and `update_wiki`
+repository dispatch handlers remain separate; preview events do not dispatch
+either operation. Workflow-only changes do not match the Terraform path filter
+and do not create a module release.
+
+The caller grants the write permissions required by the shared workflow, but
+GitHub downgrades tokens for public-fork `pull_request` runs to read-only.
+Fork previews therefore cannot write the release-plan comment, and merged fork
+PRs cannot be assumed to dispatch releases or wiki updates successfully. This
+caller does not introduce a privileged fallback; a failed fork merge requires
+maintainer investigation, not an automatic release retry. Rerunning a successful
+merged release run can dispatch again and should not be used as a test.
+
 ## What runs in CI
 
 The shared workflow formats the module, initializes without a backend, validates
